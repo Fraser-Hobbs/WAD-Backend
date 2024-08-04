@@ -7,30 +7,35 @@ This project is a backend API for a local hospice charity's inventory management
 ## Features
 
 #### Item Features
-- [ ] Item CRUD System
-   - [ ] Create new items
-   - [ ] View all items
-   - [ ] Update item details
-   - [ ] Delete items
+- [x] Item CRUD System
+   - [x] Create new items
+   - [x] View all items
+   - [x] Update item details
+   - [x] Delete items
 #### User/Volunteer Features
-- [ ] Account management
-   - [ ] Create user accounts (Managers or Admins)
-   - [ ] View user details
-   - [ ] Update user details
-   - [ ] Delete user accounts (Managers or Admins)
-   - [ ] View all users (Managers or Admins)
+- [x] Account management
+   - [x] Create user accounts (Managers or Admins)
+   - [x] View user details
+   - [x] Update user details
+   - [x] Delete user accounts (Managers or Admins)
+   - [x] View all users (Managers or Admins)
 #### Authentication Features
-- [ ] User authentication using JWT
-  - [ ] Generate Access Tokens
-  - [ ] Generate Refresh Tokens
-  - [ ] Login
-  - [ ] Logout - Clear Cookies
-- [ ] Middleware for authentication and authorization
-  - [ ] Role-based access control (RBAC)
-     - [ ] Volunteer role
-     - [ ] Manager role
-     - [ ] Admin role
-  - [ ] Token Authentication
+- [x] User authentication using JWT
+  - [x] Generate Access Tokens
+  - [x] Generate Refresh Tokens
+  - [x] Login
+  - [x] Logout - Clear Cookies
+- [x] Middleware for authentication and authorization
+  - [x] Role-based access control (RBAC)
+     - [x] Volunteer role
+     - [x] Manager role
+     - [x] Admin role
+  - [x] Token Authentication
+
+## Additional Features
+- [ ] Swagger Documentation
+- [ ] Express Validation
+- [ ] Logging
 
 ## Requirements
 
@@ -92,6 +97,20 @@ BackEnd/
 3. Commit your changes: `git commit -m 'Add some feature'`
 4. Push to the branch: `git push origin feature/your-feature-name`
 5. Open a pull request
+
+## Example Environment Variables
+
+```dotenv
+NODE_ENV= dev/prod
+URL= 'http://localhost:3000' // or your domain
+PORT=3000
+ACCESS_TOKEN_EXPIRATION=15m
+REFRESH_TOKEN_EXPIRATION=7d
+DATASTORE_DIR='path/to/folder/'
+ACCESS_TOKEN_SECRET= // (Random Sha-256 Hash)
+REFRESH_TOKEN_SECRET= // (Random Sha-256 Hash)
+```
+
 
 ## License
 
