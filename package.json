@@ -16,5 +16,9 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "nedb": "^1.8.0"
+  },
+  "devDependencies": {
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }
