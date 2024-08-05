@@ -12,7 +12,6 @@ const router = express.Router();
  *       required:
  *         - name
  *         - description
- *         - location
  *         - price
  *         - storeId
  *       properties:
@@ -32,7 +31,7 @@ const router = express.Router();
  *         name: "Antique Vase"
  *         description: "A beautiful antique vase from the 19th century."
  *         price: 50
- *         storeId: "store1"
+ *         storeId: "kYZnkBrmiZwhOQ61"
  * tags:
  *   name: Items
  *   description: Item management endpoints

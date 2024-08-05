@@ -61,6 +61,9 @@ const router = express.Router();
  *         user:
  *           type: object
  *           properties:
+ *             _id:
+ *               type: string
+ *               description: User's ID
  *             email:
  *               type: string
  *               description: User's email address
@@ -77,6 +80,7 @@ const router = express.Router();
  *       example:
  *         message: "Login Successful"
  *         user:
+ *           _id: "60d0fe4f5311236168a109ca"
  *           email: "user@example.com"
  *           firstName: "John"
  *           lastName: "Doe"

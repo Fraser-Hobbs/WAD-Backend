@@ -10,10 +10,7 @@ const tuiBox = require("./src/utils/tuiBox");
 
 const app = express();
 
-app.use(cors({
-    origin: URL ,
-    credentials: true
-}));
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -75,6 +72,12 @@ if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev') {
         ], 'Fraser Hobbs - 2024', 'rounded');
     });
 } else {
+
+    app.use(cors({
+        origin: URL ,
+        credentials: true
+    }));
+
     app.listen(PORT, () => {
         tuiBox('Charity Shop API', [
             `🚀 Server is running on http://localhost:${PORT}`
