@@ -24,7 +24,7 @@ exports.login = async (req, res) => {
         res.cookie('accessToken', accessToken, { httpOnly: true, secure: true, maxAge: ACCESS_TOKEN_EXPIRATION });
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, maxAge: REFRESH_TOKEN_EXPIRATION });
 
-        const { passwordHash, _id, ...userWithoutSensitiveInfo } = user;
+        const { passwordHash, ...userWithoutSensitiveInfo } = user;
         res.json({ message: 'Login Successful', user: userWithoutSensitiveInfo });
     } catch (error) {
         console.error(error);
