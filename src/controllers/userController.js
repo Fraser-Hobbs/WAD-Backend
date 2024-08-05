@@ -8,7 +8,14 @@ exports.createUser = async (req, res) => {
         return res.status(400).json({ message: 'Invalid role' });
     }
     const passwordHash = bcrypt.hashSync(password, 10);
-    const newUser = { email, firstName, lastName, role, passwordHash };
+    const newUser = {
+        email,
+        firstName,
+        lastName,
+        role,
+        storeId: req.user.storeId,
+        passwordHash
+    };
     try {
         const createdUser = await User.addUser(newUser);
         res.status(201).json(createdUser);

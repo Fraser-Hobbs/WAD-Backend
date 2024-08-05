@@ -17,25 +17,80 @@ class UserDAO {
         this.db.find({}, (err, docs) => {
             if (docs.length === 0) {
                 const mockUsers = [
-                    {
-                        email: 'manager@example.com',
-                        firstName: 'Manager',
-                        lastName: 'Example',
-                        role: Roles["manager"],
-                        passwordHash: bcrypt.hashSync('password123', 10)
-                    },
-                    {
-                        email: 'volunteer@example.com',
-                        firstName: 'Volunteer',
-                        lastName: 'Example',
-                        role: Roles["volunteer"],
-                        passwordHash: bcrypt.hashSync('password123', 10)
-                    },
+                    // Admin user
                     {
                         email: 'admin@example.com',
                         firstName: 'Admin',
                         lastName: 'Example',
-                        role: Roles["admin"],
+                        role: Roles['admin'],
+                        passwordHash: bcrypt.hashSync('password123', 10)
+                    },
+                    // Store 1 users
+                    {
+                        email: 'manager1@example.com',
+                        firstName: 'Manager',
+                        lastName: 'Store1',
+                        role: Roles['manager'],
+                        storeId: 'kYZnkBrmiZwhOQ61',
+                        passwordHash: bcrypt.hashSync('password123', 10)
+                    },
+                    {
+                        email: 'volunteer1@example.com',
+                        firstName: 'Volunteer',
+                        lastName: 'Store1',
+                        role: Roles['volunteer'],
+                        storeId: 'kYZnkBrmiZwhOQ61',
+                        passwordHash: bcrypt.hashSync('password123', 10)
+                    },
+                    // Store 2 users
+                    {
+                        email: 'manager2@example.com',
+                        firstName: 'Manager',
+                        lastName: 'Store2',
+                        role: Roles['manager'],
+                        storeId: 'dpIM3R5pQoXuMszt',
+                        passwordHash: bcrypt.hashSync('password123', 10)
+                    },
+                    {
+                        email: 'volunteer2@example.com',
+                        firstName: 'Volunteer',
+                        lastName: 'Store2',
+                        role: Roles['volunteer'],
+                        storeId: 'dpIM3R5pQoXuMszt',
+                        passwordHash: bcrypt.hashSync('password123', 10)
+                    },
+                    // Store 3 users
+                    {
+                        email: 'manager3@example.com',
+                        firstName: 'Manager',
+                        lastName: 'Store3',
+                        role: Roles['manager'],
+                        storeId: 'hnDVPnZk4l3WfmRp',
+                        passwordHash: bcrypt.hashSync('password123', 10)
+                    },
+                    {
+                        email: 'volunteer3@example.com',
+                        firstName: 'Volunteer',
+                        lastName: 'Store3',
+                        role: Roles['volunteer'],
+                        storeId: 'hnDVPnZk4l3WfmRp',
+                        passwordHash: bcrypt.hashSync('password123', 10)
+                    },
+                    // Store 4 users
+                    {
+                        email: 'manager4@example.com',
+                        firstName: 'Manager',
+                        lastName: 'Store4',
+                        role: Roles['manager'],
+                        storeId: 'w1r3B9p5F4IJHq0x',
+                        passwordHash: bcrypt.hashSync('password123', 10)
+                    },
+                    {
+                        email: 'volunteer4@example.com',
+                        firstName: 'Volunteer',
+                        lastName: 'Store4',
+                        role: Roles['volunteer'],
+                        storeId: 'w1r3B9p5F4IJHq0x',
                         passwordHash: bcrypt.hashSync('password123', 10)
                     }
                 ];
@@ -113,7 +168,7 @@ class UserDAO {
 
     getAllUsers() {
         return new Promise((resolve, reject) => {
-            this.db.find({}, { passwordHash: 0 }, (err, docs) => { // Exclude passwordHash from results
+            this.db.find({}, { passwordHash: 0 }, (err, docs) => {
                 if (err) {
                     reject(err);
                 } else {
