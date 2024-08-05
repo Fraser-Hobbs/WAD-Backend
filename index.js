@@ -5,6 +5,7 @@ const { PORT, URL } = require('./config');
 const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const itemRoutes = require('./src/routes/itemRoutes');
+const storeRoutes = require('./src/routes/storeRoutes');
 const tuiBox = require("./src/utils/tuiBox");
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(cookieParser());
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/items', itemRoutes);
+app.use('/stores', storeRoutes);
 
 if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev') {
     const swaggerJsDoc = require('swagger-jsdoc');

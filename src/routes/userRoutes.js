@@ -1,10 +1,50 @@
 const express = require('express');
 const userController = require('../controllers/userController');
 const { authenticateToken, authorizeRole } = require('../middleware/authMiddleware');
+const Roles = require('../enums/roles');
 const router = express.Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - email
+ *         - firstName
+ *         - lastName
+ *         - role
+ *         - password
+ *         - storeId
+ *       properties:
+ *         email:
+ *           type: string
+ *           description: User's email address
+ *         firstName:
+ *           type: string
+ *           description: User's first name
+ *         lastName:
+ *           type: string
+ *           description: User's last name
+ *         role:
+ *           type: string
+ *           description: User's role, defaults to "volunteer"
+ *           enum: [volunteer, manager, admin]
+ *           default: "volunteer"
+ *         password:
+ *           type: string
+ *           description: User's password
+ *         storeId:
+ *           type: string
+ *           description: Store ID to which the user is assigned
+ *       example:
+ *         email: "user@example.com"
+ *         firstName: "John"
+ *         lastName: "Doe"
+ *         role: "volunteer"
+ *         password: "password123"
+ *         storeId: "store1"
  * tags:
  *   name: Users
  *   description: User management endpoints
@@ -30,7 +70,7 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.post('/', authenticateToken, authorizeRole(['admin', 'manager']), userController.createUser);
+router.post('/', authenticateToken, authorizeRole([Roles['manager'], Roles['admin']]), userController.createUser);
 
 /**
  * @swagger
@@ -47,6 +87,22 @@ router.post('/', authenticateToken, authorizeRole(['admin', 'manager']), userCon
  *         description: Unauthorized
  */
 router.get('/', authenticateToken, userController.getUserDetails);
+
+/**
+ * @swagger
+ * /users/all:
+ *   get:
+ *     summary: Get all users
+ *     tags: [Users]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of users retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/all', authenticateToken, authorizeRole([Roles['manager'], Roles['admin']]), userController.getAllUsers);
 
 /**
  * @swagger
@@ -84,22 +140,7 @@ router.put('/', authenticateToken, userController.updateUser);
  *       401:
  *         description: Unauthorized
  */
-router.delete('/', authenticateToken, authorizeRole(['admin', 'manager']), userController.deleteUser);
+router.delete('/', authenticateToken, authorizeRole([Roles['manager'], Roles['admin']]), userController.deleteUser);
 
-/**
- * @swagger
- * /users/all:
- *   get:
- *     summary: Get all users
- *     tags: [Users]
- *     security:
- *       - cookieAuth: []
- *     responses:
- *       200:
- *         description: List of users retrieved successfully
- *       401:
- *         description: Unauthorized
- */
-router.get('/all', authenticateToken, authorizeRole(['admin','manager']), userController.getAllUsers);
 
 module.exports = router;

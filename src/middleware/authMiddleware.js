@@ -7,7 +7,6 @@ exports.authenticateToken = (req, res, next) => {
 
     jwt.verify(token, ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) return res.sendStatus(403);
-        // console.log(`Authenticate Token - decoded:  ${JSON.stringify(decoded)}`);
 
         req.user = decoded;
         next();
