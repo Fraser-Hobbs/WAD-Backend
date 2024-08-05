@@ -33,7 +33,8 @@ This project is a backend API for a local hospice charity's inventory management
   - [x] Token Authentication
 
 ## Additional Features
-- [ ] Swagger Documentation
+- [x] Swagger Documentation
+- [x] Store Management System
 - [ ] Express Validation
 - [ ] Logging
 
@@ -50,7 +51,7 @@ This project is a backend API for a local hospice charity's inventory management
     cd Backend
     ```
 
-2. Install dependencies using pnpm:
+2. Install dependencies using pnpm or npm:
     ```bash
     pnpm install
     ```

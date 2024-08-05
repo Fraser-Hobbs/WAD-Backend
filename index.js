@@ -32,7 +32,7 @@ if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev') {
             info: {
                 title: 'Charity Shop API',
                 version: '1.0.0',
-                description: "API for Charity Shop",
+                description: "This project is a backend API for a local hospice charity's inventory management system. The system allows each of the charity's four shops to showcase their unique in-store items. It facilitates the management of item details by volunteers and staff, and provides public access to view the items available in each shop.",
                 contact: {
                     name: "Fraser Hobbs",
                 },
