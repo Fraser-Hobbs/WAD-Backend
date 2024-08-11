@@ -1,8 +1,8 @@
 const Item = require('../models/itemDAO');
 const Roles = require("../enums/roles");
 const Store = require('../models/storeDAO');
+const User = require('../models/userDAO');
 const ApiResponseDTO = require('../dto/apiResponseDTO');
-const { validationResult } = require('express-validator');
 
 exports.getItems = async (req, res) => {
     const { storeId, userId } = req.query;
@@ -23,20 +23,17 @@ exports.getItems = async (req, res) => {
         const itemCount = items.length;
         res.json(new ApiResponseDTO('Items retrieved successfully', { itemCount, items }, null));
     } catch (error) {
-        console.error('Error retrieving items:', error);
         res.status(500).json(new ApiResponseDTO('Server error', null, error.message));
     }
 };
 
 exports.createItem = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json(new ApiResponseDTO('Validation failed', null, errors.array()));
-    }
-
     let { name, description, storeId, price } = req.body;
+    console.log(req.body);
     const dateCreated = new Date().toISOString(); // Automatically set the creation date
     const userId = req.user._id; // Get the user's ID
+     req.user = await User.findById(userId);
+
 
     try {
         if (req.user.role === Roles['admin'] && !storeId) {
@@ -47,6 +44,7 @@ exports.createItem = async (req, res) => {
 
         // Check if the store exists
         const store = await Store.getStoreById(storeId);
+        console.log(`Store: ${store} - Store ID: ${storeId}`);
         if (!store) {
             return res.status(400).json(new ApiResponseDTO('Store not found', null, 'Invalid store ID'));
         }
@@ -54,17 +52,12 @@ exports.createItem = async (req, res) => {
         const newItem = await Item.addItem({ name, description, price, storeId, dateCreated, userId });
         res.status(201).json(new ApiResponseDTO('Item created successfully', newItem, null));
     } catch (error) {
-        console.error('Error creating item:', error);
+        console.error(error);
         res.status(400).json(new ApiResponseDTO('Error creating item', null, error.message));
     }
 };
 
 exports.updateItem = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json(new ApiResponseDTO('Validation failed', null, errors.array()));
-    }
-
     const { id } = req.params;
     const { name, description, price, storeId } = req.body;
 
@@ -83,10 +76,10 @@ exports.updateItem = async (req, res) => {
         }
         res.json(new ApiResponseDTO('Item updated successfully', null, null));
     } catch (error) {
-        console.error('Error updating item:', error);
         res.status(500).json(new ApiResponseDTO('Server error', null, error.message));
     }
 };
+
 
 exports.deleteItem = async (req, res) => {
     const { id } = req.params;
@@ -98,7 +91,6 @@ exports.deleteItem = async (req, res) => {
         }
         res.json(new ApiResponseDTO('Item deleted successfully', null, null));
     } catch (error) {
-        console.error('Error deleting item:', error);
         res.status(500).json(new ApiResponseDTO('Server error', null, error.message));
     }
 };

@@ -2,7 +2,6 @@ const Store = require('../models/storeDAO');
 const Item = require('../models/itemDAO');
 const User = require('../models/userDAO');
 const ApiResponseDTO = require('../dto/apiResponseDTO');
-const { validationResult } = require('express-validator');
 
 exports.getAllStores = async (req, res) => {
     try {
@@ -13,7 +12,6 @@ exports.getAllStores = async (req, res) => {
 
         res.json(new ApiResponseDTO('Stores retrieved successfully', { stores }));
     } catch (error) {
-        console.error('Error retrieving stores:', error);
         res.status(500).json(new ApiResponseDTO('Internal server error', null, error.message));
     }
 };
@@ -27,34 +25,22 @@ exports.getStoreById = async (req, res) => {
         }
         res.json(new ApiResponseDTO('Store retrieved successfully', { store }));
     } catch (error) {
-        console.error('Error retrieving store by ID:', error);
         res.status(500).json(new ApiResponseDTO('Internal server error', null, error.message));
     }
 };
 
 exports.createStore = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json(new ApiResponseDTO('Validation failed', null, errors.array()));
-    }
-
     const { name, address } = req.body;
     const newStore = { name, address };
     try {
         const createdStore = await Store.addStore(newStore);
         res.status(201).json(new ApiResponseDTO('Store created successfully', { store: createdStore }));
     } catch (error) {
-        console.error('Error creating store:', error);
         res.status(400).json(new ApiResponseDTO('Error creating store', null, error.message));
     }
 };
 
 exports.updateStore = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json(new ApiResponseDTO('Validation failed', null, errors.array()));
-    }
-
     const { id } = req.params;
     const { name, address } = req.body;
     const update = { name, address };
@@ -65,7 +51,6 @@ exports.updateStore = async (req, res) => {
         }
         res.json(new ApiResponseDTO('Store updated successfully'));
     } catch (error) {
-        console.error('Error updating store:', error);
         res.status(500).json(new ApiResponseDTO('Internal server error', null, error.message));
     }
 };
@@ -87,7 +72,6 @@ exports.deleteStore = async (req, res) => {
 
         res.json(new ApiResponseDTO('Store deleted successfully'));
     } catch (error) {
-        console.error('Error deleting store:', error);
         res.status(500).json(new ApiResponseDTO('Internal server error', null, error.message));
     }
 };

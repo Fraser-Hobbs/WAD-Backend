@@ -2,17 +2,7 @@ const express = require('express');
 const storeController = require('../controllers/storeController');
 const { authenticateToken, authorizeRole } = require('../middleware/authMiddleware');
 const Roles = require('../enums/roles');
-const { check, validationResult } = require('express-validator');
-const rateLimit = require('express-rate-limit');
-
 const router = express.Router();
-
-// Rate limiter for store modification routes
-const storeModificationLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // limit each IP to 10 requests per windowMs
-    message: 'Too many requests, please try again later.'
-});
 
 /**
  * @swagger
@@ -98,6 +88,10 @@ router.get('/:id', authenticateToken, storeController.getStoreById);
  *       content:
  *         application/json:
  *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - address
  *             properties:
  *               name:
  *                 type: string
@@ -116,16 +110,7 @@ router.get('/:id', authenticateToken, storeController.getStoreById);
  *       401:
  *         description: Unauthorized
  */
-router.post('/', authenticateToken, authorizeRole([Roles['admin']]), storeModificationLimiter, [
-    check('name').not().isEmpty().withMessage('Store name is required'),
-    check('address').not().isEmpty().withMessage('Store address is required')
-], (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-}, storeController.createStore);
+router.post('/', authenticateToken, authorizeRole([Roles['admin']]), storeController.createStore);
 
 /**
  * @swagger
@@ -156,7 +141,7 @@ router.post('/', authenticateToken, authorizeRole([Roles['admin']]), storeModifi
  *       404:
  *         description: Store not found
  */
-router.put('/:id', authenticateToken, authorizeRole([Roles['admin']]), storeModificationLimiter, storeController.updateStore);
+router.put('/:id', authenticateToken, authorizeRole([Roles['admin']]), storeController.updateStore);
 
 /**
  * @swagger
@@ -181,6 +166,6 @@ router.put('/:id', authenticateToken, authorizeRole([Roles['admin']]), storeModi
  *       404:
  *         description: Store not found
  */
-router.delete('/:id', authenticateToken, authorizeRole([Roles['admin']]), storeModificationLimiter, storeController.deleteStore);
+router.delete('/:id', authenticateToken, authorizeRole([Roles['admin']]), storeController.deleteStore);
 
 module.exports = router;

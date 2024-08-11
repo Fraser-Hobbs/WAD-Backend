@@ -1,15 +1,6 @@
 const express = require('express');
 const authController = require('../controllers/authController');
-const rateLimit = require('express-rate-limit');
-const { check, validationResult } = require('express-validator');
 const router = express.Router();
-
-// Rate limiter for login attempts
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // limit each IP to 10 requests per windowMs
-    message: 'Too many login attempts from this IP, please try again after 15 minutes'
-});
 
 /**
  * @swagger
@@ -82,20 +73,57 @@ const loginLimiter = rateLimit({
  *         LoginFailed:
  *           value:
  *             message: "Login Failed"
- *             error: "Invalid credentials"
  *             data: null
+ *             error: "Invalid email or password"
+ *         AuthSuccess:
+ *           value:
+ *             message: "Authenticated"
+ *             data:
+ *               isAuthenticated: true
+ *               data:
+ *                 email: "admin@example.com"
+ *                 firstName: "Admin"
+ *                 lastName: "Example"
+ *                 role: "admin"
+ *                 _id: "Qu7iKv4UNunvMmlf"
+ *             error: null
+ *         AuthTokenExpired:
+ *           value:
+ *             message: "Unauthorized"
+ *             data:
+ *               isAuthenticated: false
+ *             error: "Access Token Expired"
+ *         NoTokenProvided:
+ *           value:
+ *             message: "Unauthorized"
+ *             data:
+ *               isAuthenticated: false
+ *             error: "Unauthorized, no tokens provided"
  *         LogoutSuccess:
  *           value:
- *             message: "Successfully logged out"
- *             error: null
+ *             message: "Logged out successfully"
  *             data: null
+ *             error: null
+ *         TokenRefreshed:
+ *           value:
+ *             message: "Token refreshed"
+ *             data: null
+ *             error: null
+ *         RefreshFailed:
+ *           value:
+ *             message: "Unauthorized"
+ *             data: null
+ *             error: "Invalid or missing refresh token"
+ *
+ * tags:
+ *   name: Auth
+ *   description: Authentication endpoints
  */
-
 /**
  * @swagger
  * /auth/login:
  *   post:
- *     summary: Log in a user
+ *     summary: Logs in a user and sets the refresh token in cookies
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -105,38 +133,50 @@ const loginLimiter = rateLimit({
  *             $ref: '#/components/schemas/Login'
  *     responses:
  *       200:
- *         description: Successfully logged in
+ *         description: Login successful, access token is returned in response body
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
+ *             examples:
+ *               LoginSuccess:
+ *                 $ref: '#/components/schemas/ApiResponseDTO/examples/LoginSuccess'
  *       401:
- *         description: Unauthorized, invalid credentials
+ *         description: Unauthorized, invalid email or password
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
+ *             examples:
+ *               LoginFailed:
+ *                 $ref: '#/components/schemas/ApiResponseDTO/examples/LoginFailed'
  */
-router.post('/login', loginLimiter, [
-    check('email').isEmail().withMessage('Invalid email address'),
-    check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
-], async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    try {
-        await authController.login(req, res);
-    } catch (err) {
-        next(err); // Pass the error to the global error handler
-    }
-});
+router.post('/login', authController.login);
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logs out the current user and clears the authentication cookies
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Logout successful, cookies cleared
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseDTO'
+ *             examples:
+ *               LogoutSuccess:
+ *                 $ref: '#/components/schemas/ApiResponseDTO/examples/LogoutSuccess'
+ */
+router.post('/logout', authController.logout);
 
 /**
  * @swagger
  * /auth/refresh-token:
  *   post:
- *     summary: Refresh the access token using the refresh token stored in cookies
+ *     summary: Refreshes the access token using the refresh token stored in cookies
  *     tags: [Auth]
  *     responses:
  *       200:
@@ -145,20 +185,20 @@ router.post('/login', loginLimiter, [
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
+ *             examples:
+ *               TokenRefreshed:
+ *                 $ref: '#/components/schemas/ApiResponseDTO/examples/TokenRefreshed'
  *       401:
  *         description: Unauthorized, invalid or missing refresh token
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
+ *             examples:
+ *               RefreshFailed:
+ *                 $ref: '#/components/schemas/ApiResponseDTO/examples/RefreshFailed'
  */
-router.post('/refresh-token', async (req, res, next) => {
-    try {
-        await authController.refreshToken(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
+router.post('/refresh-token', authController.refreshToken);
 
 /**
  * @swagger
@@ -175,44 +215,21 @@ router.post('/refresh-token', async (req, res, next) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
+ *             examples:
+ *               AuthSuccess:
+ *                 $ref: '#/components/schemas/ApiResponseDTO/examples/AuthSuccess'
  *       401:
  *         description: Unauthorized, either token expired or not provided
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- */
-router.get('/check-auth', async (req, res, next) => {
-    try {
-        await authController.checkAuth(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
-
-/**
- * @swagger
- * /auth/logout:
- *   post:
- *     summary: Logs out the user
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: Successfully logged out
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiResponseDTO'
  *             examples:
- *               LogoutSuccess:
- *                 $ref: '#/components/schemas/ApiResponseDTO/examples/LogoutSuccess'
+ *               AuthTokenExpired:
+ *                 $ref: '#/components/schemas/ApiResponseDTO/examples/AuthTokenExpired'
+ *               NoTokenProvided:
+ *                 $ref: '#/components/schemas/ApiResponseDTO/examples/NoTokenProvided'
  */
-router.post('/logout', async (req, res, next) => {
-    try {
-        await authController.logout(req, res);
-    } catch (err) {
-        next(err);
-    }
-});
+router.get('/check-auth', authController.checkAuth);
 
 module.exports = router;
