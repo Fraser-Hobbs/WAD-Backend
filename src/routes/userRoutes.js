@@ -1,8 +1,18 @@
 const express = require('express');
 const userController = require('../controllers/userController');
-const { authenticateToken, authorizeRole } = require('../middleware/authMiddleware');
+const {authenticateToken, authorizeRole} = require('../middleware/authMiddleware');
 const Roles = require('../enums/roles');
+const {check, validationResult} = require('express-validator');
+const rateLimit = require('express-rate-limit');
+
 const router = express.Router();
+
+// Rate limiter for user modification routes
+const userModificationLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // limit each IP to 10 requests per windowMs
+    message: 'Too many requests, please try again later.'
+});
 
 /**
  * @swagger
@@ -71,90 +81,59 @@ const router = express.Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Success:
- *                 value:
- *                   message: "User created"
- *                   data:
- *                     user:
- *                       email: "user@example.com"
- *                       firstName: "John"
- *                       lastName: "Doe"
- *                       role: "volunteer"
- *                       storeId: "store1"
- *                   error: null
  *       400:
- *         description: Invalid role
+ *         description: Validation error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               InvalidRole:
- *                 value:
- *                   message: "Invalid role"
- *                   data: null
- *                   error: "Invalid role"
  *       401:
  *         description: Unauthorized
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Unauthorized:
- *                 value:
- *                   message: "Unauthorized"
- *                   data: null
- *                   error: "Unauthorized access"
+ *       403:
+ *         description: Permission denied
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseDTO'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseDTO'
  */
-router.post('/', authenticateToken, authorizeRole([Roles['manager'], Roles['admin']]), userController.createUser);
+router.post(
+    '/',
+    authenticateToken,
+    authorizeRole([Roles['admin']]),
+    userModificationLimiter,
+    [
+        check('email').isEmail().withMessage('Invalid email address'),
+        check('firstName').not().isEmpty().withMessage('First name is required'),
+        check('lastName').not().isEmpty().withMessage('Last name is required'),
+        check('password').isLength({min: 6}).withMessage('Password must be at least 6 characters long'),
+    ],
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if ( !errors.isEmpty() ) {
+            return res.status(400).json({
+                message: 'Validation error',
+                data: null,
+                error: errors.array()
+            });
+        }
+        next();
+    },
+    userController.createUser
+);
 
 /**
  * @swagger
  * /users:
- *   get:
- *     summary: Get user details
- *     tags: [Users]
- *     security:
- *       - cookieAuth: []
- *     responses:
- *       200:
- *         description: User details retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Success:
- *                 value:
- *                   message: "User details retrieved"
- *                   data:
- *                     user:
- *                       email: "user@example.com"
- *                       firstName: "John"
- *                       lastName: "Doe"
- *                       role: "volunteer"
- *                       storeId: "store1"
- *                   error: null
- *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Unauthorized:
- *                 value:
- *                   message: "Unauthorized"
- *                   data: null
- *                   error: "Unauthorized access"
- */
-router.get('/', authenticateToken, userController.getUserDetails);
-
-/**
- * @swagger
- * /users/all:
  *   get:
  *     summary: Get all users
  *     tags: [Users]
@@ -166,38 +145,66 @@ router.get('/', authenticateToken, userController.getUserDetails);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Success:
- *                 value:
- *                   message: "Users retrieved"
- *                   data:
- *                     users:
- *                       - email: "user1@example.com"
- *                         firstName: "John"
- *                         lastName: "Doe"
- *                         role: "volunteer"
- *                         storeId: "store1"
- *                       - email: "user2@example.com"
- *                         firstName: "Jane"
- *                         lastName: "Doe"
- *                         role: "manager"
- *                         storeId: "store2"
- *                   error: null
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
  *       401:
  *         description: Unauthorized
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Unauthorized:
- *                 value:
- *                   message: "Unauthorized"
- *                   data: null
- *                   error: "Unauthorized access"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseDTO'
  */
-router.get('/all', authenticateToken, authorizeRole([Roles['manager'], Roles['admin']]), userController.getAllUsers);
+router.get('/', authenticateToken, authorizeRole([Roles['admin']]), userController.getAllUsers);
+
+/**
+ * @swagger
+ * /users/{userId}:
+ *   get:
+ *     summary: Get a user by ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User ID
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: User retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseDTO'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseDTO'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseDTO'
+ */
+router.get('/:userId', authenticateToken, authorizeRole([Roles['admin'], Roles['manager']]), userController.getUserById);
 
 /**
  * @swagger
@@ -205,15 +212,15 @@ router.get('/all', authenticateToken, authorizeRole([Roles['manager'], Roles['ad
  *   put:
  *     summary: Update a user
  *     tags: [Users]
- *     security:
- *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
- *         required: true
  *         schema:
  *           type: string
- *         description: The ID of the user to update
+ *         required: true
+ *         description: User ID
+ *     security:
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -227,50 +234,61 @@ router.get('/all', authenticateToken, authorizeRole([Roles['manager'], Roles['ad
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Success:
- *                 value:
- *                   message: "User updated successfully"
- *                   data: null
- *                   error: null
  *       400:
- *         description: Invalid role
+ *         description: Validation error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               InvalidRole:
- *                 value:
- *                   message: "Invalid role"
- *                   data: null
- *                   error: "Invalid role"
  *       401:
  *         description: Unauthorized
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Unauthorized:
- *                 value:
- *                   message: "Unauthorized"
- *                   data: null
- *                   error: "Unauthorized access"
+ *       403:
+ *         description: Permission denied
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseDTO'
  *       404:
  *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               UserNotFound:
- *                 value:
- *                   message: "User not found"
- *                   data: null
- *                   error: "User not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponseDTO'
  */
-router.put('/:userId', authenticateToken, userController.updateUser);
+router.put(
+    '/:userId',
+    authenticateToken,
+    authorizeRole([Roles['admin'], Roles['manager']]),
+    userModificationLimiter,
+    [
+        check('email').optional().isEmail().withMessage('Invalid email address'),
+        check('firstName').optional().not().isEmpty().withMessage('First name is required'),
+        check('lastName').optional().not().isEmpty().withMessage('Last name is required'),
+        check('password').optional().isLength({min: 6}).withMessage('Password must be at least 6 characters long'),
+    ],
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if ( !errors.isEmpty() ) {
+            return res.status(400).json({
+                message: 'Validation error',
+                data: null,
+                error: errors.array()
+            });
+        }
+        next();
+    },
+    userController.updateUser
+);
 
 /**
  * @swagger
@@ -278,27 +296,15 @@ router.put('/:userId', authenticateToken, userController.updateUser);
  *   delete:
  *     summary: Delete a user
  *     tags: [Users]
- *     security:
- *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
- *         required: true
  *         schema:
  *           type: string
- *         description: The ID of the user to delete
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               requestingUserId:
- *                 type: string
- *                 description: The ID of the user making the deletion request
- *             example:
- *               requestingUserId: "requestingUserId123"
+ *         required: true
+ *         description: User ID
+ *     security:
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: User deleted successfully
@@ -306,62 +312,37 @@ router.put('/:userId', authenticateToken, userController.updateUser);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Success:
- *                 value:
- *                   message: "User deleted"
- *                   data: null
- *                   error: null
  *       401:
  *         description: Unauthorized
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               Unauthorized:
- *                 value:
- *                   message: "Unauthorized"
- *                   data: null
- *                   error: "Unauthorized access"
  *       403:
  *         description: Permission denied
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               PermissionDenied:
- *                 value:
- *                   message: "Permission denied"
- *                   data: null
- *                   error: "You do not have permission to delete users"
  *       404:
  *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               UserNotFound:
- *                 value:
- *                   message: "User not found"
- *                   data: null
- *                   error: "User not found"
  *       500:
  *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponseDTO'
- *             examples:
- *               ServerError:
- *                 value:
- *                   message: "Internal server error"
- *                   data: null
- *                   error: "Internal server error"
  */
-router.delete('/:userId', authenticateToken, authorizeRole([Roles['manager'], Roles['admin']]), userController.deleteUser);
+router.delete(
+    '/:userId',
+    authenticateToken,
+    authorizeRole([Roles['admin'], Roles['manager']]),
+    userModificationLimiter,
+    userController.deleteUser
+);
 
 module.exports = router;
-

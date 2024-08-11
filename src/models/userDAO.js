@@ -193,7 +193,27 @@ class UserDAO {
             });
         });
     }
+
+    /**
+     * Finds users based on the provided query.
+     * @param {Object} query - The query object to filter users.
+     * @returns {Promise<Object[]>} The array of user documents.
+     */
+    async getUsersByQuery(query) {
+        return new Promise((resolve, reject) => {
+            this.db.find(query, { passwordHash: 0 }, (err, docs) => {
+                if (err) {
+                    console.error('Error retrieving users:', err);
+                    reject(err);
+                } else {
+                    resolve(docs);
+                }
+            });
+        });
+    }
+
 }
+
 
 // Initialize UserDAO with the specified database file path
 const userDAO = new UserDAO(`${config.DATASTORE_DIR}/users.db`);
