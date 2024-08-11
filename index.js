@@ -9,6 +9,7 @@ const userRoutes = require('./src/routes/userRoutes');
 const itemRoutes = require('./src/routes/itemRoutes');
 const storeRoutes = require('./src/routes/storeRoutes');
 const tuiBox = require("./src/utils/tuiBox");
+const errorHandler = require('./src/middleware/errorHandler');
 
 const app = express();
 
@@ -55,11 +56,8 @@ if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev') {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 }
 
-// Global error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
-});
+
+app.use(errorHandler);
 
 // Start the server with conditional logging
 app.listen(PORT, () => {
