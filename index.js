@@ -16,10 +16,15 @@ const app = express();
 // Set up security headers with Helmet
 app.use(helmet());
 
-// Set up request logging with Morgan
-app.use(morgan('combined'));
+// Custom Morgan format: date/time - route - activity
+morgan.token('date', () => new Date().toISOString());
+morgan.token('route', (req) => req.originalUrl);
+morgan.token('activity', (req) => `${req.method} ${req.originalUrl}`);
 
-// Configure CORS with environment variables
+const morganFormat = ':date - :route - :activity';
+app.use(morgan(morganFormat));
+
+// Configure CORS with environme nt variables
 const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || ["http://localhost:3000", "http://localhost:4200"];
 app.use(cors({
     origin: allowedOrigins,
@@ -42,15 +47,38 @@ if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev') {
 
     const swaggerOptions = {
         swaggerDefinition: {
+            openapi: "3.0.0",
             info: {
-                title: 'API Documentation',
+                title: 'Charity Shop API',
                 version: '1.0.0',
-                description: 'API Information'
+                description: "API for managing charity shop inventory and users",
             },
-            servers: [{ url: 'http://localhost:5000' }]
+            servers: [
+                {
+                    url: `http://localhost:${process.env.PORT || 3000}/api`,
+                    description: 'Development server',
+                },
+            ],
+            components: {
+                securitySchemes: {
+                    cookieAuth: {
+                        type: 'apiKey',
+                        in: 'cookie',
+                        name: 'accessToken',
+                        description: 'JWT Authorization cookie. Example: "accessToken={token}"'
+                    }
+                }
+            },
+            security: [
+                {
+                    cookieAuth: []
+                }
+            ],
+            basePath: '/api',
         },
-        apis: ['./src/routes/*.js']
+        apis: ["./src/routes/*.js"]
     };
+
 
     const swaggerDocs = swaggerJsDoc(swaggerOptions);
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
