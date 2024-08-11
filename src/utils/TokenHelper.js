@@ -13,6 +13,7 @@ class TokenHelper {
             const now = Math.floor(Date.now() / 1000);
             return decoded.exp - now; // Time in seconds
         } catch (error) {
+            console.error('Error in getTimeUntilExpiry:', error);
             return null;
         }
     }
@@ -28,18 +29,28 @@ class TokenHelper {
             const decoded = jwt.verify(token, secret);
             const expiryDate = new Date(decoded.exp * 1000); // Convert from seconds to milliseconds
 
-            const hours = String(expiryDate.getHours()).padStart(2, '0');
-            const minutes = String(expiryDate.getMinutes()).padStart(2, '0');
-            const seconds = String(expiryDate.getSeconds()).padStart(2, '0');
-
-            const day = String(expiryDate.getDate()).padStart(2, '0');
-            const month = String(expiryDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-            const year = expiryDate.getFullYear();
-
-            return `${hours}:${minutes}:${seconds} - ${day}/${month}/${year}`;
+            return TokenHelper.formatDateTime(expiryDate);
         } catch (error) {
+            console.error('Error in getTokenExpiryDate:', error);
             return null;
         }
+    }
+
+    /**
+     * Format a date object into HH:MM:SS - DD/MM/YYYY.
+     * @param {Date} date - The date object to format.
+     * @returns {string} - Formatted date and time.
+     */
+    static formatDateTime(date) {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const year = date.getFullYear();
+
+        return `${hours}:${minutes}:${seconds} - ${day}/${month}/${year}`;
     }
 }
 
