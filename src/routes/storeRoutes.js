@@ -48,7 +48,7 @@ const router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/Store'
  */
-router.get('/', authenticateToken, storeController.getAllStores);
+router.get('/', storeController.getAllStores);
 
 /**
  * @swagger

@@ -3,7 +3,14 @@ const bcrypt = require('bcryptjs');
 const config = require('../../config');
 const Roles = require('../enums/roles');
 
+/**
+ * Data Access Object for User operations.
+ */
 class UserDAO {
+    /**
+     * Creates an instance of UserDAO.
+     * @param {string} [dbFilePath] - Path to the database file.
+     */
     constructor(dbFilePath) {
         if (dbFilePath) {
             this.db = new Datastore({ filename: dbFilePath, autoload: true });
@@ -13,6 +20,9 @@ class UserDAO {
         }
     }
 
+    /**
+     * Initializes the database with mock users if empty.
+     */
     init() {
         this.db.find({}, (err, docs) => {
             if (docs.length === 0) {
@@ -106,6 +116,11 @@ class UserDAO {
         });
     }
 
+    /**
+     * Finds a user by email.
+     * @param {string} email - The email of the user.
+     * @returns {Promise<Object>} The user document.
+     */
     findByEmail(email) {
         return new Promise((resolve, reject) => {
             this.db.findOne({ email }, (err, doc) => {
@@ -118,6 +133,11 @@ class UserDAO {
         });
     }
 
+    /**
+     * Finds a user by ID.
+     * @param {string} id - The ID of the user.
+     * @returns {Promise<Object>} The user document.
+     */
     findById(id) {
         return new Promise((resolve, reject) => {
             this.db.findOne({ _id: id }, (err, doc) => {
@@ -130,6 +150,11 @@ class UserDAO {
         });
     }
 
+    /**
+     * Adds a new user to the database.
+     * @param {Object} user - The user object to add.
+     * @returns {Promise<Object>} The newly added user document.
+     */
     addUser(user) {
         return new Promise((resolve, reject) => {
             this.db.insert(user, (err, newDoc) => {
@@ -142,6 +167,12 @@ class UserDAO {
         });
     }
 
+    /**
+     * Updates a user in the database.
+     * @param {string} id - The ID of the user to update.
+     * @param {Object} update - The update object.
+     * @returns {Promise<number>} The number of documents updated.
+     */
     updateUser(id, update) {
         return new Promise((resolve, reject) => {
             this.db.update({ _id: id }, { $set: update }, {}, (err, numReplaced) => {
@@ -154,6 +185,11 @@ class UserDAO {
         });
     }
 
+    /**
+     * Deletes a user from the database.
+     * @param {string} id - The ID of the user to delete.
+     * @returns {Promise<number>} The number of documents removed.
+     */
     deleteUser(id) {
         return new Promise((resolve, reject) => {
             this.db.remove({ _id: id }, {}, (err, numRemoved) => {
@@ -166,6 +202,10 @@ class UserDAO {
         });
     }
 
+    /**
+     * Gets all users from the database.
+     * @returns {Promise<Object[]>} The array of user documents.
+     */
     getAllUsers() {
         return new Promise((resolve, reject) => {
             this.db.find({}, { passwordHash: 0 }, (err, docs) => {
@@ -177,8 +217,46 @@ class UserDAO {
             });
         });
     }
+
+    /**
+     * Gets all users by store ID.
+     * @param {string} storeId - The ID of the store.
+     * @returns {Promise<Object[]>} The array of user documents.
+     */
+    getUsersByStoreId(storeId) {
+        return new Promise((resolve, reject) => {
+            this.db.find({ storeId }, (err, docs) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(docs);
+                }
+            });
+        });
+    }
+
+    /**
+     * Removes multiple users from the database.
+     * @param {Object} query - The query object to find the users to delete.
+     * @returns {Promise<number>} - The number of documents removed.
+     */
+    deleteMany(query) {
+        return new Promise((resolve, reject) => {
+            this.db.remove(query, { multi: true }, (err, numRemoved) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(numRemoved);
+                }
+            });
+        });
+    }
+
+
 }
 
+// Initialize UserDAO with the specified database file path
 const userDAO = new UserDAO(`${config.DATASTORE_DIR}/users.db`);
 userDAO.init();
+
 module.exports = userDAO;
