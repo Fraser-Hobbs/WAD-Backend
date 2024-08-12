@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { ACCESS_TOKEN_SECRET } = require('../../config');
+const { ACCESS_TOKEN_SECRET } = require('../config/config');
 
 exports.authenticateToken = (req, res, next) => {
     const token = req.cookies["accessToken"];
