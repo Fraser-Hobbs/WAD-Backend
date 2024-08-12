@@ -1,3 +1,4 @@
+
 # Charity Shop Inventory System Backend
 
 ## Overview
@@ -8,17 +9,17 @@ This project is a backend API for a local hospice charity's inventory management
 
 #### Item Features
 - [x] Item CRUD System
-   - [x] Create new items
-   - [x] View all items
-   - [x] Update item details
-   - [x] Delete items
+  - [x] Create new items
+  - [x] View all items
+  - [x] Update item details
+  - [x] Delete items
 #### User/Volunteer Features
 - [x] Account management
-   - [x] Create user accounts (Managers or Admins)
-   - [x] View user details
-   - [x] Update user details
-   - [x] Delete user accounts (Managers or Admins)
-   - [x] View all users (Managers or Admins)
+  - [x] Create user accounts (Managers or Admins)
+  - [x] View user details
+  - [x] Update user details
+  - [x] Delete user accounts (Managers or Admins)
+  - [x] View all users (Managers or Admins)
 #### Authentication Features
 - [x] User authentication using JWT
   - [x] Generate Access Tokens
@@ -27,9 +28,9 @@ This project is a backend API for a local hospice charity's inventory management
   - [x] Logout - Clear Cookies
 - [x] Middleware for authentication and authorization
   - [x] Role-based access control (RBAC)
-     - [x] Volunteer role
-     - [x] Manager role
-     - [x] Admin role
+    - [x] Volunteer role
+    - [x] Manager role
+    - [x] Admin role
   - [x] Token Authentication
 
 ## Additional Features
@@ -102,21 +103,17 @@ BackEnd/
 ## Example Environment Variables
 
 ```dotenv
-NODE_ENV= dev/prod
-URL= 'http://localhost:3000' // or your domain
+NODE_ENV=dev/prod
+URL='http://localhost:3000' // or your domain
 PORT=3000
 ACCESS_TOKEN_EXPIRATION=15m
 REFRESH_TOKEN_EXPIRATION=7d
 DATASTORE_DIR='path/to/folder/'
-ACCESS_TOKEN_SECRET= // (Random Sha-256 Hash)
-REFRESH_TOKEN_SECRET= // (Random Sha-256 Hash)
+ACCESS_TOKEN_SECRET=
+REFRESH_TOKEN_SECRET=
 ```
 
 
 ## License
 
 This project is licensed under the MIT License.
-
----
-
-For any questions or further information, please contact me.
