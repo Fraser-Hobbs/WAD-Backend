@@ -32,7 +32,7 @@ exports.createItem = async (req, res) => {
     console.log(req.body);
     const dateCreated = new Date().toISOString(); // Automatically set the creation date
     const userId = req.user._id; // Get the user's ID
-     req.user = await User.findById(userId);
+    req.user = await User.findById(userId);
 
 
     try {

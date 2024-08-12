@@ -14,14 +14,16 @@ const {getTimeUntilExpiry} = require("../utils/TokenHelper");
 const generateAccessToken = (user) => {
     return jwt.sign({
         _id: user._id,
-        role: user.role
+        role: user.role,
+        storeId: user.storeId
     }, ACCESS_TOKEN_SECRET, {expiresIn: process.env.ACCESS_TOKEN_EXPIRATION});
 };
 
 const generateRefreshToken = (user) => {
     return jwt.sign({
         _id: user._id,
-        role: user.role
+        role: user.role,
+        storeId: user.storeId
     }, REFRESH_TOKEN_SECRET, {expiresIn: process.env.REFRESH_TOKEN_EXPIRATION});
 };
 
