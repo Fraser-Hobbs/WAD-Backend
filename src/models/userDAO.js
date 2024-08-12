@@ -1,6 +1,6 @@
 const Datastore = require('nedb');
 const bcrypt = require('bcryptjs');
-const config = require('../../config');
+const config = require('../config/config');
 const Roles = require('../enums/roles');
 
 /**
@@ -105,11 +105,11 @@ class UserDAO {
                     }
                 ];
 
-                this.db.insert(mockUsers, (err, newDocs) => {
+                this.db.insert(mockUsers, (err) => {
                     if (err) {
                         console.error('Error while inserting mock users: ', err);
                     } else {
-                        console.info('Mock users inserted: ', newDocs);
+                        console.info('Mock users inserted: ');
                     }
                 });
             }

@@ -1,4 +1,4 @@
-const Enum = require('../utils/Enum');
+const Enum = require('../utils/enum');
 
 const Roles = Enum.create('volunteer', 'manager', 'admin');
 

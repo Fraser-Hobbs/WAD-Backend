@@ -7,7 +7,7 @@ const {
     REFRESH_TOKEN_SECRET,
     ACCESS_TOKEN_EXPIRATION,
     REFRESH_TOKEN_EXPIRATION
-} = require('../../config');
+} = require('../config/config');
 
 const {getTimeUntilExpiry} = require("../utils/TokenHelper");
 

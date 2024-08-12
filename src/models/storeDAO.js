@@ -1,5 +1,5 @@
 const Datastore = require('nedb');
-const config = require('../../config');
+const config = require('../config/config');
 
 /**
  * Data Access Object for Store operations.
@@ -31,11 +31,11 @@ class StoreDAO {
                     { _id: 'w1r3B9p5F4IJHq0x', name: 'Shop 4', address: '101 Maple St' }
                 ];
 
-                this.db.insert(mockStores, (err, newDocs) => {
+                this.db.insert(mockStores, (err) => {
                     if (err) {
                         console.error('Error while inserting mock stores: ', err);
                     } else {
-                        console.info('Mock stores inserted: ', newDocs);
+                        console.info('Mock stores inserted: ');
                     }
                 });
             }

@@ -1,5 +1,5 @@
 const Datastore = require('nedb');
-const config = require('../../config');
+const config = require('../config/config');
 
 /**
  * Data Access Object for Item operations.
@@ -282,11 +282,11 @@ class ItemDAO {
                     },
                 ];
 
-                this.db.insert(mockItems, (err, newDocs) => {
+                this.db.insert(mockItems, (err) => {
                     if ( err ) {
                         console.error('Error while inserting mock items: ', err);
                     } else {
-                        console.info('Mock items inserted: ', newDocs);
+                        console.info('Mock items inserted: ');
                     }
                 });
             }
