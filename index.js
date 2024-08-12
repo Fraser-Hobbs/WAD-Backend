@@ -37,6 +37,10 @@ if ( process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev' ) 
             },
             servers: [
                 {
+                    url: 'https://webappdev.fraserhobbs.dev/api',
+                    description: 'Production Server'
+                },
+                {
                     url: `http://localhost:${process.env.PORT || 3000}/api`,
                     description: 'Development server',
                 },
